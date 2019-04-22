@@ -1,0 +1,38 @@
+version: '3'
+services:
+  api1:
+    build: flask/
+    ports:
+      - "80:5000"
+    volumes:
+      - ./flask/src:/src
+    command: python /src/api1/api1.py
+    environment:
+      - API2_HOST=api2
+      - AWS_XRAY_DAEMON_ADDRESS=xray:2000
+    links:
+      - api2
+      - xray
+  api2:
+    build: flask/
+    volumes:
+      - ./flask/src:/src
+    command: python /src/api2/api2.py
+    environment:
+      - API3_HOST=api3
+      - AWS_XRAY_DAEMON_ADDRESS=xray:2000
+    links:
+      - api3
+      - xray
+  api3:
+    build: flask/
+    volumes:
+      - ./flask/src:/src
+    command: python /src/api3/api3.py
+    environment:
+      - AWS_XRAY_DAEMON_ADDRESS=xray:2000
+    links:
+      - xray
+  xray:
+    build: aws-xray-daemon-container/3.0/
+    command: --region us-east-1
